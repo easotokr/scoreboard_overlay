@@ -55,14 +55,9 @@
     letter-spacing: 1.5px;
     text-transform: uppercase;
   }
-  .foul-dots {
-    display: flex;
-    gap: 4px;
-    margin-top: 4px;
-  }
+  .foul-dots { display: flex; gap: 4px; margin-top: 4px; }
   .foul-dot {
-    width: 9px;
-    height: 9px;
+    width: 9px; height: 9px;
     border-radius: 50%;
     border: 1.5px solid rgba(255,255,255,0.25);
     background: transparent;
@@ -80,42 +75,12 @@
     border-left: 1px solid rgba(255,255,255,0.07);
     border-right: 1px solid rgba(255,255,255,0.07);
   }
-  .period-label {
-    font-size: 8px;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.35);
-    text-transform: uppercase;
-  }
-  .period-value {
-    font-size: 24px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-  }
-  .period-suffix {
-    font-size: 8px;
-    color: rgba(255,255,255,0.35);
-    margin-top: -2px;
-  }
-  .divider-h {
-    width: 36px;
-    height: 1px;
-    background: rgba(255,255,255,0.08);
-    margin: 2px 0;
-  }
-  .timer-value {
-    font-size: 16px;
-    font-weight: 700;
-    color: #60a5fa;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
-  }
-  .timer-label {
-    font-size: 8px;
-    color: rgba(255,255,255,0.25);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  .period-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.35); text-transform: uppercase; }
+  .period-value { font-size: 24px; font-weight: 900; color: #fff; line-height: 1; }
+  .period-suffix { font-size: 8px; color: rgba(255,255,255,0.35); margin-top: -2px; }
+  .divider-h { width: 36px; height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0; }
+  .timer-value { font-size: 16px; font-weight: 700; color: #60a5fa; font-family: 'Courier New', monospace; letter-spacing: 1px; }
+  .timer-label { font-size: 8px; color: rgba(255,255,255,0.25); letter-spacing: 1px; text-transform: uppercase; }
   .cards-row {
     display: flex;
     justify-content: space-between;
@@ -123,16 +88,10 @@
     padding: 0 4px;
     min-height: 4px;
   }
-  .card-zone {
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-    min-height: 4px;
-  }
+  .card-zone { display: flex; gap: 6px; align-items: flex-start; }
   .card-zone.away-cards { justify-content: flex-end; }
   .penalty-card {
-    width: 30px;
-    height: 42px;
+    width: 30px; height: 42px;
     border-radius: 3px;
     transform: rotate(45deg);
     flex-shrink: 0;
@@ -143,14 +102,12 @@
   .penalty-card.red    { background: #dc2626; }
   .status-dot {
     position: fixed;
-    bottom: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
+    bottom: 8px; right: 8px;
+    width: 8px; height: 8px;
     border-radius: 50%;
-    background: #22c55e;
+    background: #ef4444;
   }
-  .status-dot.offline { background: #ef4444; }
+  .status-dot.online { background: #22c55e; }
 </style>
 </head>
 <body>
@@ -158,24 +115,24 @@
 <div class="overlay-wrap">
   <div class="scoreboard">
     <div class="team-block home">
-      <div class="team-name" id="home-name">LOCAL</div>
+      <div class="team-name"  id="home-name">LOCAL</div>
       <div class="team-score" id="home-score">0</div>
       <div class="team-fouls-label">faltas</div>
-      <div class="foul-dots" id="home-dots"></div>
+      <div class="foul-dots"  id="home-dots"></div>
     </div>
     <div class="center-block">
       <div class="period-label">periodo</div>
-      <div class="period-value" id="period-val">1</div>
+      <div class="period-value"  id="period-val">1</div>
       <div class="period-suffix" id="period-sfx">°</div>
       <div class="divider-h"></div>
       <div class="timer-value" id="timer-val">00:00</div>
       <div class="timer-label">tiempo</div>
     </div>
     <div class="team-block away">
-      <div class="team-name" id="away-name">VISITA</div>
+      <div class="team-name"  id="away-name">VISITA</div>
       <div class="team-score" id="away-score">0</div>
       <div class="team-fouls-label">faltas</div>
-      <div class="foul-dots" id="away-dots"></div>
+      <div class="foul-dots"  id="away-dots"></div>
     </div>
   </div>
   <div class="cards-row">
@@ -186,11 +143,11 @@
 
 <div class="status-dot" id="status-dot"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  const firebaseConfig = {
+<!-- Firebase SDK compat (sin type=module, funciona en cualquier webview) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
     apiKey: "AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
     authDomain: "scoreboard-overlay-a462f.firebaseapp.com",
     databaseURL: "https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
@@ -198,60 +155,73 @@
     storageBucket: "scoreboard-overlay-a462f.firebasestorage.app",
     messagingSenderId: "117646185962",
     appId: "1:117646185962:web:7763fcb47c7f901cc60e93"
-  };
+  });
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-  const dot = document.getElementById('status-dot');
+  var db  = firebase.database();
+  var dot = document.getElementById('status-dot');
+  var PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
+  var MAX_FOULS  = 7;
 
-  const PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
-  const MAX_FOULS  = 7;
-
-  function render(s) {
-    document.getElementById('home-score').textContent = s.homeScore ?? 0;
-    document.getElementById('away-score').textContent = s.awayScore ?? 0;
-    document.getElementById('home-name').textContent  = s.homeName  ?? 'LOCAL';
-    document.getElementById('away-name').textContent  = s.awayName  ?? 'VISITA';
-    document.getElementById('period-val').textContent = s.period    ?? 1;
-    document.getElementById('period-sfx').textContent = PERIOD_SFX[s.period] ?? '°';
-
-    const sec = s.seconds ?? 0;
-    const m   = Math.floor(sec / 60);
-    const ss  = sec % 60;
-    document.getElementById('timer-val').textContent =
-      String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
-
-    renderDots('home', s.homeFouls ?? 0);
-    renderDots('away', s.awayFouls ?? 0);
-    renderCards('home', s.homeCards ?? []);
-    renderCards('away', s.awayCards ?? []);
+  function fmtTime(s) {
+    var m  = Math.floor(s / 60);
+    var ss = s % 60;
+    return String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
   }
 
   function renderDots(team, fouls) {
-    const el = document.getElementById(team + '-dots');
+    var el = document.getElementById(team + '-dots');
     el.innerHTML = '';
-    for (let i = 0; i < MAX_FOULS; i++) {
-      const d = document.createElement('div');
+    for (var i = 0; i < MAX_FOULS; i++) {
+      var d = document.createElement('div');
       d.className = 'foul-dot' + (i < fouls ? ' active' : '');
       el.appendChild(d);
     }
   }
 
   function renderCards(team, cards) {
-    const el = document.getElementById(team + '-cards');
+    var el = document.getElementById(team + '-cards');
     el.innerHTML = '';
-    (Array.isArray(cards) ? cards : Object.values(cards)).forEach(color => {
-      const c = document.createElement('div');
+    var arr = Array.isArray(cards) ? cards : (cards ? Object.values(cards) : []);
+    arr.forEach(function(color) {
+      var c = document.createElement('div');
       c.className = 'penalty-card ' + color;
       el.appendChild(c);
     });
   }
 
-  onValue(ref(db, 'match'), snap => {
-    dot.classList.remove('offline');
-    const data = snap.val();
+  function render(d) {
+    document.getElementById('home-score').textContent = d.homeScore || 0;
+    document.getElementById('away-score').textContent = d.awayScore || 0;
+    document.getElementById('home-name').textContent  = d.homeName  || 'LOCAL';
+    document.getElementById('away-name').textContent  = d.awayName  || 'VISITA';
+    document.getElementById('period-val').textContent = d.period    || 1;
+    document.getElementById('period-sfx').textContent = PERIOD_SFX[d.period] || '°';
+    document.getElementById('timer-val').textContent  = fmtTime(d.seconds || 0);
+    renderDots('home', d.homeFouls || 0);
+    renderDots('away', d.awayFouls || 0);
+    renderCards('home', d.homeCards);
+    renderCards('away', d.awayCards);
+  }
+
+  // Listener en tiempo real
+  db.ref('match').on('value', function(snap) {
+    dot.className = 'status-dot online';
+    var data = snap.val();
     if (data) render(data);
-  }, () => dot.classList.add('offline'));
+  }, function() {
+    dot.className = 'status-dot';
+  });
+
+  // Fallback: polling cada 3s por si el listener falla en el webview
+  setInterval(function() {
+    db.ref('match').once('value').then(function(snap) {
+      dot.className = 'status-dot online';
+      var data = snap.val();
+      if (data) render(data);
+    }).catch(function() {
+      dot.className = 'status-dot';
+    });
+  }, 3000);
 </script>
 </body>
 </html>
