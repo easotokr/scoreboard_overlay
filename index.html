@@ -6,72 +6,66 @@
 <title>Hockey Overlay</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: transparent;
-    font-family: 'Arial Black', Arial, sans-serif;
-    overflow: hidden;
-  }
-  .overlay-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-  }
+  body { background: transparent; font-family: 'Arial Black', Arial, sans-serif; overflow: hidden; }
+  .overlay-wrap { display: inline-flex; flex-direction: column; gap: 8px; padding: 10px; }
+
   .scoreboard {
-    display: flex;
-    align-items: stretch;
-    border-radius: 10px;
-    overflow: hidden;
+    display: flex; align-items: stretch;
+    border-radius: 10px; overflow: hidden;
     border: 2px solid rgba(255,255,255,0.12);
     background: rgba(8,12,24,0.92);
   }
   .team-block {
-    width: 160px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 10px 10px;
+    width: 170px; display: flex; flex-direction: column;
+    align-items: center; padding: 10px 10px 10px;
   }
-  .team-block.home { background: rgba(15,25,60,0.95); }
-  .team-block.away { background: rgba(40,10,10,0.95); }
+  .team-logo {
+    width: 38px; height: 38px; border-radius: 50%;
+    object-fit: contain; margin-bottom: 5px; display: none;
+  }
+  .team-logo.visible { display: block; }
   .team-name {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; margin-bottom: 2px;
     color: rgba(255,255,255,0.65);
-    margin-bottom: 2px;
   }
-  .team-score {
-    font-size: 56px;
-    font-weight: 900;
-    line-height: 1;
-    color: #fff;
-  }
+  .team-score { font-size: 56px; font-weight: 900; line-height: 1; color: #fff; }
+
+  /* FALTAS — modo puntos */
   .team-fouls-label {
-    margin-top: 5px;
-    font-size: 9px;
-    color: rgba(255,255,255,0.4);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    margin-top: 5px; font-size: 9px; color: rgba(255,255,255,0.4);
+    letter-spacing: 1.5px; text-transform: uppercase;
   }
   .foul-dots { display: flex; gap: 4px; margin-top: 4px; }
   .foul-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255,255,255,0.25);
-    background: transparent;
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.25); background: transparent;
   }
   .foul-dot.active { background: #f59e0b; border-color: #f59e0b; }
+
+  /* FALTAS — modo número */
+  .foul-number {
+    display: none;
+    margin-top: 6px;
+    font-size: 28px; font-weight: 900; line-height: 1;
+    padding: 2px 10px; border-radius: 6px;
+    border: 2px solid transparent;
+  }
+  /* normal: blanco, sin borde */
+  .foul-number.fnormal { color: rgba(255,255,255,0.85); border-color: transparent; background: transparent; }
+  .foul-number.fzero   { color: rgba(255,255,255,0.25); border-color: transparent; background: transparent; }
+  /* hitos resaltados */
+  .foul-number.f10 { color: #facc15; border-color: rgba(250,204,21,0.6);  background: rgba(250,204,21,0.13); font-size: 34px; }
+  .foul-number.f15 { color: #fb923c; border-color: rgba(251,146,60,0.7);  background: rgba(251,146,60,0.15); font-size: 36px; }
+  .foul-number.f20 { color: #f87171; border-color: rgba(248,113,113,0.8); background: rgba(248,113,113,0.18); font-size: 38px; }
+  .foul-number.f25 { color: #ef4444; border-color: rgba(239,68,68,0.9);   background: rgba(239,68,68,0.20);  font-size: 40px; }
+  .foul-number.f30 { color: #dc2626; border-color: rgba(220,38,38,1);     background: rgba(220,38,38,0.25);  font-size: 42px; }
+
   .center-block {
-    width: 100px;
-    background: rgba(5,8,18,0.97);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 4px;
-    gap: 4px;
+    width: 100px; background: rgba(5,8,18,0.97);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 8px 4px; gap: 4px;
     border-left: 1px solid rgba(255,255,255,0.07);
     border-right: 1px solid rgba(255,255,255,0.07);
   }
@@ -81,58 +75,55 @@
   .divider-h { width: 36px; height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0; }
   .timer-value { font-size: 16px; font-weight: 700; color: #60a5fa; font-family: 'Courier New', monospace; letter-spacing: 1px; }
   .timer-label { font-size: 8px; color: rgba(255,255,255,0.25); letter-spacing: 1px; text-transform: uppercase; }
-  .cards-row {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0 4px;
-    min-height: 4px;
-  }
+  .timer-block { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+  .cards-row { display: flex; justify-content: space-between; width: 100%; padding: 0 4px; min-height: 4px; }
   .card-zone { display: flex; gap: 6px; align-items: flex-start; }
   .card-zone.away-cards { justify-content: flex-end; }
   .penalty-card {
-    width: 30px; height: 42px;
-    border-radius: 3px;
-    transform: rotate(45deg);
-    flex-shrink: 0;
+    width: 30px; height: 42px; border-radius: 3px;
+    transform: rotate(45deg); flex-shrink: 0;
     border: 1.5px solid rgba(0,0,0,0.3);
   }
   .penalty-card.blue   { background: #2563eb; }
   .penalty-card.yellow { background: #eab308; }
   .penalty-card.red    { background: #dc2626; }
+
   .status-dot {
-    position: fixed;
-    bottom: 8px; right: 8px;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #ef4444;
+    position: fixed; bottom: 8px; right: 8px;
+    width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
   }
   .status-dot.online { background: #22c55e; }
 </style>
 </head>
 <body>
-
 <div class="overlay-wrap">
-  <div class="scoreboard">
-    <div class="team-block home">
+  <div class="scoreboard" id="scoreboard">
+    <div class="team-block home" id="home-block">
+      <img id="home-logo" class="team-logo" src="" alt="">
       <div class="team-name"  id="home-name">LOCAL</div>
       <div class="team-score" id="home-score">0</div>
-      <div class="team-fouls-label">faltas</div>
-      <div class="foul-dots"  id="home-dots"></div>
+      <div class="team-fouls-label" id="home-fouls-label">faltas</div>
+      <div class="foul-dots"   id="home-dots"></div>
+      <div class="foul-number" id="home-foul-num">0</div>
     </div>
     <div class="center-block">
       <div class="period-label">periodo</div>
       <div class="period-value"  id="period-val">1</div>
       <div class="period-suffix" id="period-sfx">°</div>
-      <div class="divider-h"></div>
-      <div class="timer-value" id="timer-val">00:00</div>
-      <div class="timer-label">tiempo</div>
+      <div class="divider-h" id="timer-divider"></div>
+      <div class="timer-block" id="timer-block">
+        <div class="timer-value" id="timer-val">00:00</div>
+        <div class="timer-label">tiempo</div>
+      </div>
     </div>
-    <div class="team-block away">
+    <div class="team-block away" id="away-block">
+      <img id="away-logo" class="team-logo" src="" alt="">
       <div class="team-name"  id="away-name">VISITA</div>
       <div class="team-score" id="away-score">0</div>
-      <div class="team-fouls-label">faltas</div>
-      <div class="foul-dots"  id="away-dots"></div>
+      <div class="team-fouls-label" id="away-fouls-label">faltas</div>
+      <div class="foul-dots"   id="away-dots"></div>
+      <div class="foul-number" id="away-foul-num">0</div>
     </div>
   </div>
   <div class="cards-row">
@@ -140,88 +131,126 @@
     <div class="card-zone away-cards" id="away-cards"></div>
   </div>
 </div>
-
 <div class="status-dot" id="status-dot"></div>
 
-<!-- Firebase SDK compat (sin type=module, funciona en cualquier webview) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
   firebase.initializeApp({
-    apiKey: "AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
-    authDomain: "scoreboard-overlay-a462f.firebaseapp.com",
-    databaseURL: "https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
-    projectId: "scoreboard-overlay-a462f",
-    storageBucket: "scoreboard-overlay-a462f.firebasestorage.app",
-    messagingSenderId: "117646185962",
-    appId: "1:117646185962:web:7763fcb47c7f901cc60e93"
+    apiKey:"AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
+    authDomain:"scoreboard-overlay-a462f.firebaseapp.com",
+    databaseURL:"https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
+    projectId:"scoreboard-overlay-a462f",
+    storageBucket:"scoreboard-overlay-a462f.firebasestorage.app",
+    messagingSenderId:"117646185962",
+    appId:"1:117646185962:web:7763fcb47c7f901cc60e93"
   });
 
-  var db  = firebase.database();
-  var dot = document.getElementById('status-dot');
-  var PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
-  var MAX_FOULS  = 7;
+  var db=firebase.database(), dot=document.getElementById('status-dot');
+  var PERIOD_SFX={1:'°',2:'°',3:'°',4:'°',5:' ET',6:' P'};
+  var MAX_FOULS=30;
 
-  function fmtTime(s) {
-    var m  = Math.floor(s / 60);
-    var ss = s % 60;
-    return String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+  function fmtTime(s){
+    s=Math.max(0,s);
+    var m=Math.floor(s/60),ss=s%60;
+    return String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
   }
 
-  function renderDots(team, fouls) {
-    var el = document.getElementById(team + '-dots');
-    el.innerHTML = '';
-    for (var i = 0; i < MAX_FOULS; i++) {
-      var d = document.createElement('div');
-      d.className = 'foul-dot' + (i < fouls ? ' active' : '');
-      el.appendChild(d);
+  function foulClass(n){
+    if(n===0)  return 'fzero';
+    if(n===10) return 'f10';
+    if(n===15) return 'f15';
+    if(n===20) return 'f20';
+    if(n===25) return 'f25';
+    if(n===30) return 'f30';
+    return 'fnormal';
+  }
+
+  function renderFouls(team, fouls, mode){
+    var dotsEl  = document.getElementById(team+'-dots');
+    var numEl   = document.getElementById(team+'-foul-num');
+    var labelEl = document.getElementById(team+'-fouls-label');
+    if(mode==='number'){
+      dotsEl.style.display  = 'none';
+      labelEl.style.display = 'none';
+      numEl.style.display   = 'block';
+      numEl.textContent     = fouls;
+      numEl.className       = 'foul-number '+foulClass(fouls);
+    } else {
+      numEl.style.display   = 'none';
+      dotsEl.style.display  = 'flex';
+      labelEl.style.display = 'block';
+      dotsEl.innerHTML='';
+      for(var i=0;i<7;i++){
+        var d=document.createElement('div');
+        d.className='foul-dot'+(i<fouls?' active':'');
+        dotsEl.appendChild(d);
+      }
     }
   }
 
-  function renderCards(team, cards) {
-    var el = document.getElementById(team + '-cards');
-    el.innerHTML = '';
-    var arr = Array.isArray(cards) ? cards : (cards ? Object.values(cards) : []);
-    arr.forEach(function(color) {
-      var c = document.createElement('div');
-      c.className = 'penalty-card ' + color;
+  function renderCards(team,cards){
+    var el=document.getElementById(team+'-cards');
+    el.innerHTML='';
+    var arr=Array.isArray(cards)?cards:(cards?Object.values(cards):[]);
+    arr.forEach(function(color){
+      var c=document.createElement('div');
+      c.className='penalty-card '+color;
       el.appendChild(c);
     });
   }
 
-  function render(d) {
-    document.getElementById('home-score').textContent = d.homeScore || 0;
-    document.getElementById('away-score').textContent = d.awayScore || 0;
-    document.getElementById('home-name').textContent  = d.homeName  || 'LOCAL';
-    document.getElementById('away-name').textContent  = d.awayName  || 'VISITA';
-    document.getElementById('period-val').textContent = d.period    || 1;
-    document.getElementById('period-sfx').textContent = PERIOD_SFX[d.period] || '°';
-    document.getElementById('timer-val').textContent  = fmtTime(d.seconds || 0);
-    renderDots('home', d.homeFouls || 0);
-    renderDots('away', d.awayFouls || 0);
-    renderCards('home', d.homeCards);
-    renderCards('away', d.awayCards);
+  function applyLogo(team,url){
+    var el=document.getElementById(team+'-logo');
+    if(url&&url.trim()){el.src=url.trim();el.className='team-logo visible';}
+    else{el.src='';el.className='team-logo';}
   }
 
-  // Listener en tiempo real
-  db.ref('match').on('value', function(snap) {
-    dot.className = 'status-dot online';
-    var data = snap.val();
-    if (data) render(data);
-  }, function() {
-    dot.className = 'status-dot';
-  });
+  function applyColors(team,cfg){
+    var block=document.getElementById(team+'-block');
+    var nameEl=document.getElementById(team+'-name');
+    block.style.background=(cfg&&cfg.bgColor)?cfg.bgColor:(team==='home'?'rgba(15,25,60,0.95)':'rgba(40,10,10,0.95)');
+    nameEl.style.color=(cfg&&cfg.nameColor)?cfg.nameColor:'rgba(255,255,255,0.65)';
+    if(cfg&&cfg.borderColor){
+      document.getElementById('scoreboard').style.borderColor=cfg.borderColor;
+    }
+  }
 
-  // Fallback: polling cada 3s por si el listener falla en el webview
-  setInterval(function() {
-    db.ref('match').once('value').then(function(snap) {
-      dot.className = 'status-dot online';
-      var data = snap.val();
-      if (data) render(data);
-    }).catch(function() {
-      dot.className = 'status-dot';
-    });
-  }, 3000);
+  function render(d){
+    document.getElementById('home-score').textContent=d.homeScore||0;
+    document.getElementById('away-score').textContent=d.awayScore||0;
+    document.getElementById('home-name').textContent =d.homeName||'LOCAL';
+    document.getElementById('away-name').textContent =d.awayName||'VISITA';
+    document.getElementById('period-val').textContent=d.period||1;
+    document.getElementById('period-sfx').textContent=PERIOD_SFX[d.period]||'°';
+
+    var showTimer=d.showTimer!==false;
+    document.getElementById('timer-block').style.display  =showTimer?'flex':'none';
+    document.getElementById('timer-divider').style.display=showTimer?'block':'none';
+    if(showTimer) document.getElementById('timer-val').textContent=fmtTime(d.seconds||0);
+
+    var foulMode=d.foulMode||'dots';
+    renderFouls('home',d.homeFouls||0,foulMode);
+    renderFouls('away',d.awayFouls||0,foulMode);
+    renderCards('home',d.homeCards);
+    renderCards('away',d.awayCards);
+    applyLogo('home',d.homeLogo);
+    applyLogo('away',d.awayLogo);
+    applyColors('home',d.homeColors);
+    applyColors('away',d.awayColors);
+  }
+
+  db.ref('match').on('value',function(snap){
+    dot.className='status-dot online';
+    var data=snap.val(); if(data) render(data);
+  },function(){ dot.className='status-dot'; });
+
+  setInterval(function(){
+    db.ref('match').once('value').then(function(snap){
+      dot.className='status-dot online';
+      var data=snap.val(); if(data) render(data);
+    }).catch(function(){ dot.className='status-dot'; });
+  },3000);
 </script>
 </body>
 </html>

@@ -5,547 +5,635 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Hockey Control</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0a0e1a;
-    font-family: Arial, sans-serif;
-    color: #fff;
-    min-height: 100vh;
-    padding: 12px;
-    padding-bottom: 30px;
-  }
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  h1 {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-  }
-  .conn-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    background: rgba(34,197,94,0.15);
-    color: #4ade80;
-    border: 1px solid rgba(34,197,94,0.3);
-  }
-  .conn-badge.offline {
-    background: rgba(239,68,68,0.15);
-    color: #f87171;
-    border-color: rgba(239,68,68,0.3);
-  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0a0e1a;font-family:Arial,sans-serif;color:#fff;min-height:100vh;padding:12px 12px 40px;}
 
-  /* MINI PREVIEW */
-  .preview {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    margin-bottom: 10px;
-  }
-  .prev-team {
-    flex: 1;
-    text-align: center;
-    padding: 8px 6px;
-    border-radius: 6px;
-  }
-  .prev-team.home { background: rgba(15,25,60,0.8); }
-  .prev-team.away { background: rgba(40,10,10,0.8); }
-  .prev-name  { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
-  .prev-score { font-size: 36px; font-weight: 900; line-height: 1.1; }
-  .prev-center {
-    width: 70px;
-    text-align: center;
-    background: rgba(5,8,18,0.95);
-    padding: 6px 4px;
-    border-radius: 6px;
-    margin: 0 4px;
-  }
-  .prev-period { font-size: 18px; font-weight: 900; }
-  .prev-timer  { font-size: 12px; color: #60a5fa; font-family: 'Courier New', monospace; font-weight: 700; }
-  .prev-plabel { font-size: 7px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .topbar h1{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+  .conn{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:1px;
+    background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+  .conn.online{background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3);}
 
-  /* CARDS PREVIEW */
-  .cards-preview {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    padding: 0 4px;
-    min-height: 40px;
-  }
-  .cprev-zone { display: flex; gap: 5px; align-items: flex-start; }
-  .cprev-card {
-    width: 22px; height: 32px;
-    border-radius: 2px;
-    transform: rotate(45deg);
-    border: 1px solid rgba(0,0,0,0.3);
-    flex-shrink: 0;
-  }
-  .cprev-card.blue   { background: #2563eb; }
-  .cprev-card.yellow { background: #eab308; }
-  .cprev-card.red    { background: #dc2626; }
+  .tabs{display:flex;gap:4px;margin-bottom:12px;}
+  .tab{flex:1;height:36px;font-size:11px;font-weight:700;
+    background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);
+    border:1px solid rgba(255,255,255,0.08);border-radius:7px;cursor:pointer;transition:all 0.15s;}
+  .tab.active{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.2);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* PREVIEW */
+  .preview{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .prev-team{flex:1;text-align:center;padding:8px 6px;border-radius:6px;}
+  .prev-team.home{background:rgba(15,25,60,0.8);}
+  .prev-team.away{background:rgba(40,10,10,0.8);}
+  .prev-name{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;}
+  .prev-score{font-size:34px;font-weight:900;line-height:1.1;}
+  .prev-fouls{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
+  .prev-center{width:68px;text-align:center;background:rgba(5,8,18,0.95);padding:6px 4px;border-radius:6px;margin:0 4px;}
+  .prev-period{font-size:17px;font-weight:900;}
+  .prev-timer{font-size:12px;color:#60a5fa;font-family:'Courier New',monospace;font-weight:700;}
+  .prev-plabel{font-size:7px;color:rgba(255,255,255,0.3);letter-spacing:1px;}
+  .cards-preview{display:flex;justify-content:space-between;margin-bottom:10px;padding:0 4px;min-height:36px;}
+  .cprev-zone{display:flex;gap:5px;align-items:flex-start;}
+  .cprev-card{width:20px;height:28px;border-radius:2px;transform:rotate(45deg);border:1px solid rgba(0,0,0,0.3);flex-shrink:0;}
+  .cprev-card.blue{background:#2563eb;} .cprev-card.yellow{background:#eab308;} .cprev-card.red{background:#dc2626;}
 
   /* SECTION */
-  .section {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-  .section-title {
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-    margin-bottom: 10px;
-  }
-  .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .team-col { display: flex; flex-direction: column; gap: 8px; }
-  .col-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 2px;
-  }
-  .col-label.home { color: #93c5fd; }
-  .col-label.away { color: #fca5a5; }
-  .row-label {
-    font-size: 9px;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .foul-count {
-    font-size: 16px;
-    font-weight: 900;
-    color: #f59e0b;
-  }
-  .btn-row { display: flex; gap: 5px; }
+  .section{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;margin-bottom:10px;}
+  .section-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;}
+  .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .team-col{display:flex;flex-direction:column;gap:8px;}
+  .col-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:2px;}
+  .col-label.home{color:#93c5fd;} .col-label.away{color:#fca5a5;}
+  .row-label{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+  .foul-count{font-size:16px;font-weight:900;color:#f59e0b;}
+  .btn-row{display:flex;gap:5px;}
 
-  button {
-    border: none;
-    border-radius: 6px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-    transition: opacity 0.1s, transform 0.08s;
-  }
-  button:active { opacity: 0.7; transform: scale(0.95); }
+  button{border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;transition:opacity 0.1s,transform 0.08s;}
+  button:active{opacity:0.7;transform:scale(0.95);}
 
-  .btn-big {
-    flex: 1;
-    height: 48px;
-    font-size: 22px;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-  .btn-big.plus  { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); }
-  .btn-big.minus { background: rgba(239,68,68,0.2);  border-color: rgba(239,68,68,0.4); }
+  .btn-big{flex:1;height:50px;font-size:24px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);}
+  .btn-big.plus{background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.4);}
+  .btn-big.minus{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);}
 
-  .btn-card {
-    flex: 1;
-    height: 42px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    border-radius: 6px;
-  }
-  .btn-card.blue   { background: rgba(37,99,235,0.35);  border: 1px solid #2563eb; color: #93c5fd; }
-  .btn-card.yellow { background: rgba(234,179,8,0.25);  border: 1px solid #eab308; color: #fde68a; }
-  .btn-card.red    { background: rgba(220,38,38,0.3);   border: 1px solid #dc2626; color: #fca5a5; }
-  .btn-card.clear  { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-size: 18px; }
+  .btn-card{flex:1;height:44px;font-size:11px;font-weight:700;letter-spacing:0.5px;border-radius:6px;}
+  .btn-card.blue{background:rgba(37,99,235,0.35);border:1px solid #2563eb;color:#93c5fd;}
+  .btn-card.yellow{background:rgba(234,179,8,0.25);border:1px solid #eab308;color:#fde68a;}
+  .btn-card.red{background:rgba(220,38,38,0.3);border:1px solid #dc2626;color:#fca5a5;}
+  .btn-card.clear{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:18px;}
 
-  .bottom-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .period-ctrl {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .period-lbl { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; }
-  .period-num { font-size: 20px; font-weight: 900; min-width: 22px; text-align: center; }
-  .btn-sm {
-    width: 34px; height: 34px;
-    font-size: 16px;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-  }
-  .timer-ctrl {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .timer-num {
-    font-size: 16px;
-    font-weight: 700;
-    color: #60a5fa;
-    font-family: 'Courier New', monospace;
-    min-width: 48px;
-  }
-  .btn-timer {
-    flex: 1;
-    height: 36px;
-    font-size: 12px;
-    border-radius: 6px;
-    color: #6ee7b7;
-    background: rgba(16,185,129,0.2);
-    border: 1px solid rgba(16,185,129,0.4);
-  }
-  .btn-timer.running {
-    color: #fca5a5;
-    background: rgba(239,68,68,0.2);
-    border-color: rgba(239,68,68,0.4);
-  }
-  .btn-reset-sm {
-    width: 36px; height: 36px;
-    font-size: 14px;
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-  }
-  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 10px 0; }
-  .btn-names {
-    width: 100%;
-    height: 38px;
-    font-size: 11px;
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 6px;
-  }
-  .btn-reset-all {
-    width: 100%;
-    height: 42px;
-    font-size: 12px;
-    background: rgba(239,68,38,0.15);
-    color: #fca5a5;
-    border: 1px solid rgba(239,68,38,0.3);
-    border-radius: 8px;
-    margin-top: 4px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  /* CRONÓMETRO */
+  .timer-big{font-size:48px;font-weight:900;color:#60a5fa;font-family:'Courier New',monospace;text-align:center;letter-spacing:2px;margin:8px 0;}
+  .timer-big.warning{color:#f59e0b;}
+  .timer-big.urgent{color:#ef4444;}
+  .timer-controls{display:flex;gap:8px;margin-bottom:10px;}
+  .btn-timer-main{flex:1;height:52px;font-size:14px;font-weight:700;border-radius:8px;
+    color:#6ee7b7;background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);}
+  .btn-timer-main.running{color:#fca5a5;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);}
+  .btn-timer-sec{width:52px;height:52px;font-size:14px;font-weight:700;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;}
+
+  .duration-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .dur-label{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-right:2px;}
+  .btn-dur{padding:6px 10px;font-size:11px;font-weight:700;border-radius:6px;
+    background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);}
+  .btn-dur.active{background:rgba(96,165,250,0.2);color:#93c5fd;border-color:#3b82f6;}
+
+  .period-row{display:flex;align-items:center;gap:8px;}
+  .period-lbl{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;}
+  .period-num{font-size:20px;font-weight:900;min-width:22px;text-align:center;}
+  .btn-sm{width:36px;height:36px;font-size:16px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:6px;}
+
+  /* TOGGLE SWITCH */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .toggle-row:last-child{border-bottom:none;padding-bottom:0;}
+  .toggle-row:first-child{padding-top:0;}
+  .toggle-info{display:flex;flex-direction:column;gap:2px;}
+  .toggle-label{font-size:13px;font-weight:700;color:#fff;}
+  .toggle-desc{font-size:10px;color:rgba(255,255,255,0.35);}
+  .switch{position:relative;width:44px;height:26px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.12);border-radius:26px;transition:.3s;}
+  .slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+  input:checked+.slider{background:#3b82f6;}
+  input:checked+.slider:before{transform:translateX(18px);}
+
+  /* MODO FALTAS */
+  .foul-mode-row{display:flex;gap:6px;margin-top:4px;}
+  .btn-mode{flex:1;height:38px;font-size:11px;font-weight:700;border-radius:7px;
+    background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1);}
+  .btn-mode.active{background:rgba(96,165,250,0.2);color:#93c5fd;border-color:#3b82f6;}
+
+  /* FOUL COLOR LEGEND */
+  .foul-legend{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .legend-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid;}
+  .lp-green {color:#a3e635;border-color:rgba(163,230,53,0.5); background:rgba(163,230,53,0.1);}
+  .lp-yellow{color:#facc15;border-color:rgba(250,204,21,0.5); background:rgba(250,204,21,0.1);}
+  .lp-orange{color:#fb923c;border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.12);}
+  .lp-red   {color:#f87171;border-color:rgba(248,113,113,0.6);background:rgba(248,113,113,0.12);}
+  .lp-dred  {color:#ef4444;border-color:rgba(239,68,68,0.8);  background:rgba(239,68,68,0.15);}
+  .lp-dred2 {color:#dc2626;border-color:rgba(220,38,38,1);    background:rgba(220,38,38,0.2);}
+
+  /* CONFIG */
+  .cfg-group{margin-bottom:14px;}
+  .cfg-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;display:block;}
+  .cfg-input{width:100%;height:38px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+    border-radius:7px;color:#fff;font-size:13px;padding:0 10px;font-family:Arial,sans-serif;}
+  .cfg-input:focus{outline:none;border-color:rgba(96,165,250,0.5);}
+  .color-row{display:flex;gap:8px;align-items:center;}
+  .color-picker{width:44px;height:38px;border:1px solid rgba(255,255,255,0.12);border-radius:7px;background:transparent;cursor:pointer;padding:2px;}
+  .color-preview{flex:1;height:38px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;padding:0 10px;font-size:12px;color:rgba(255,255,255,0.4);}
+  .btn-cfg-apply{width:100%;height:40px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    background:rgba(96,165,250,0.2);color:#93c5fd;border:1px solid rgba(96,165,250,0.4);border-radius:8px;margin-top:4px;}
+  .logo-row{display:flex;gap:6px;margin-bottom:6px;}
+  .btn-logo-upload{flex:1;height:38px;font-size:11px;font-weight:700;
+    background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.12);border-radius:7px;}
+  .logo-preview{width:38px;height:38px;border-radius:50%;object-fit:contain;border:1px solid rgba(255,255,255,0.15);display:none;}
+  .logo-preview.visible{display:block;}
+
+  .divider{height:1px;background:rgba(255,255,255,0.06);margin:10px 0;}
+  .btn-reset-all{width:100%;height:42px;font-size:12px;background:rgba(239,68,38,0.15);
+    color:#fca5a5;border:1px solid rgba(239,68,38,0.3);border-radius:8px;margin-top:4px;
+    letter-spacing:1px;text-transform:uppercase;}
+
+  input[type=file]{display:none;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <h1>hockey overlay — control</h1>
-  <div class="conn-badge" id="conn-badge">conectando...</div>
+  <div class="conn" id="conn">conectando...</div>
 </div>
 
-<!-- MINI PREVIEW -->
+<!-- PREVIEW -->
 <div class="preview">
-  <div class="prev-team home">
+  <div class="prev-team home" id="prev-home-block">
     <div class="prev-name"  id="p-hname">LOCAL</div>
     <div class="prev-score" id="p-hscore">0</div>
+    <div class="prev-fouls" id="p-hfouls">faltas: 0</div>
   </div>
   <div class="prev-center">
     <div class="prev-plabel">período</div>
     <div class="prev-period" id="p-period">1°</div>
     <div class="prev-timer"  id="p-timer">00:00</div>
   </div>
-  <div class="prev-team away">
+  <div class="prev-team away" id="prev-away-block">
     <div class="prev-name"  id="p-aname">VISITA</div>
     <div class="prev-score" id="p-ascore">0</div>
+    <div class="prev-fouls" id="p-afouls">faltas: 0</div>
   </div>
 </div>
-
-<!-- PREVIEW TARJETAS -->
 <div class="cards-preview">
   <div class="cprev-zone" id="cp-home"></div>
   <div class="cprev-zone" id="cp-away"></div>
 </div>
 
-<!-- GOLES + FALTAS -->
-<div class="section">
-  <div class="section-title">goles y faltas</div>
-  <div class="two-cols">
-    <div class="team-col">
-      <div class="col-label home">local</div>
-      <div class="row-label">gol</div>
-      <div class="btn-row">
-        <button class="btn-big plus"  onclick="ch('homeScore', 1)">+</button>
-        <button class="btn-big minus" onclick="ch('homeScore',-1)">−</button>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('partido')">partido</button>
+  <button class="tab"        onclick="switchTab('reloj')">reloj</button>
+  <button class="tab"        onclick="switchTab('config')">config</button>
+</div>
+
+<!-- TAB PARTIDO -->
+<div class="tab-panel active" id="tab-partido">
+  <div class="section">
+    <div class="section-title">goles y faltas</div>
+    <div class="two-cols">
+      <div class="team-col">
+        <div class="col-label home">local</div>
+        <div class="row-label">gol</div>
+        <div class="btn-row">
+          <button class="btn-big plus"  onclick="ch('homeScore',1)">+</button>
+          <button class="btn-big minus" onclick="ch('homeScore',-1)">−</button>
+        </div>
+        <div class="row-label">falta <span class="foul-count" id="hf">0</span></div>
+        <div class="btn-row">
+          <button class="btn-big plus"  onclick="ch('homeFouls',1)">+</button>
+          <button class="btn-big minus" onclick="ch('homeFouls',-1)">−</button>
+        </div>
       </div>
-      <div class="row-label">falta <span class="foul-count" id="hf">0</span></div>
-      <div class="btn-row">
-        <button class="btn-big plus"  onclick="ch('homeFouls', 1)">+</button>
-        <button class="btn-big minus" onclick="ch('homeFouls',-1)">−</button>
-      </div>
-    </div>
-    <div class="team-col">
-      <div class="col-label away">visita</div>
-      <div class="row-label">gol</div>
-      <div class="btn-row">
-        <button class="btn-big plus"  onclick="ch('awayScore', 1)">+</button>
-        <button class="btn-big minus" onclick="ch('awayScore',-1)">−</button>
-      </div>
-      <div class="row-label">falta <span class="foul-count" id="af">0</span></div>
-      <div class="btn-row">
-        <button class="btn-big plus"  onclick="ch('awayFouls', 1)">+</button>
-        <button class="btn-big minus" onclick="ch('awayFouls',-1)">−</button>
+      <div class="team-col">
+        <div class="col-label away">visita</div>
+        <div class="row-label">gol</div>
+        <div class="btn-row">
+          <button class="btn-big plus"  onclick="ch('awayScore',1)">+</button>
+          <button class="btn-big minus" onclick="ch('awayScore',-1)">−</button>
+        </div>
+        <div class="row-label">falta <span class="foul-count" id="af">0</span></div>
+        <div class="btn-row">
+          <button class="btn-big plus"  onclick="ch('awayFouls',1)">+</button>
+          <button class="btn-big minus" onclick="ch('awayFouls',-1)">−</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<!-- TARJETAS -->
-<div class="section">
-  <div class="section-title">tarjetas</div>
-  <div class="two-cols">
-    <div class="team-col">
-      <div class="col-label home">local</div>
-      <div class="btn-row">
-        <button class="btn-card blue"   onclick="addCard('home','blue')">azul</button>
-        <button class="btn-card yellow" onclick="addCard('home','yellow')">amar.</button>
-        <button class="btn-card red"    onclick="addCard('home','red')">roja</button>
-        <button class="btn-card clear"  onclick="removeCard('home')">✕</button>
+  <div class="section">
+    <div class="section-title">tarjetas</div>
+    <div class="two-cols">
+      <div class="team-col">
+        <div class="col-label home">local</div>
+        <div class="btn-row">
+          <button class="btn-card blue"   onclick="addCard('home','blue')">azul</button>
+          <button class="btn-card yellow" onclick="addCard('home','yellow')">amar.</button>
+          <button class="btn-card red"    onclick="addCard('home','red')">roja</button>
+          <button class="btn-card clear"  onclick="removeCard('home')">✕</button>
+        </div>
       </div>
-    </div>
-    <div class="team-col">
-      <div class="col-label away">visita</div>
-      <div class="btn-row">
-        <button class="btn-card blue"   onclick="addCard('away','blue')">azul</button>
-        <button class="btn-card yellow" onclick="addCard('away','yellow')">amar.</button>
-        <button class="btn-card red"    onclick="addCard('away','red')">roja</button>
-        <button class="btn-card clear"  onclick="removeCard('away')">✕</button>
+      <div class="team-col">
+        <div class="col-label away">visita</div>
+        <div class="btn-row">
+          <button class="btn-card blue"   onclick="addCard('away','blue')">azul</button>
+          <button class="btn-card yellow" onclick="addCard('away','yellow')">amar.</button>
+          <button class="btn-card red"    onclick="addCard('away','red')">roja</button>
+          <button class="btn-card clear"  onclick="removeCard('away')">✕</button>
+        </div>
       </div>
     </div>
   </div>
+  <button class="btn-reset-all" onclick="resetAll()">⟳ reiniciar todo</button>
 </div>
 
-<!-- PERÍODO + RELOJ -->
-<div class="section">
-  <div class="section-title">período y reloj</div>
-  <div class="bottom-row">
-    <div class="period-ctrl">
-      <span class="period-lbl">per.</span>
+<!-- TAB RELOJ -->
+<div class="tab-panel" id="tab-reloj">
+  <div class="section">
+    <div class="section-title">cronómetro descendente</div>
+    <div class="duration-row">
+      <span class="dur-label">duración:</span>
+      <button class="btn-dur" onclick="setDuration(10*60)" id="dur-10">10 min</button>
+      <button class="btn-dur" onclick="setDuration(15*60)" id="dur-15">15 min</button>
+      <button class="btn-dur" onclick="setDuration(20*60)" id="dur-20">20 min</button>
+      <button class="btn-dur" onclick="setDuration(25*60)" id="dur-25">25 min</button>
+      <button class="btn-dur" onclick="setDuration(30*60)" id="dur-30">30 min</button>
+    </div>
+    <div class="timer-big" id="timer-big">25:00</div>
+    <div class="timer-controls">
+      <button class="btn-timer-sec" onclick="adjustTime(-60)">-1'</button>
+      <button class="btn-timer-sec" onclick="adjustTime(-10)">-10s</button>
+      <button class="btn-timer-main" id="timer-btn" onclick="toggleTimer()">▶ iniciar</button>
+      <button class="btn-timer-sec" onclick="adjustTime(10)">+10s</button>
+      <button class="btn-timer-sec" onclick="adjustTime(60)">+1'</button>
+    </div>
+    <div class="divider"></div>
+    <div class="period-row">
+      <span class="period-lbl">período</span>
       <button class="btn-sm" onclick="chPeriod(-1)">◀</button>
       <span class="period-num" id="ctrl-period">1</span>
       <button class="btn-sm" onclick="chPeriod(1)">▶</button>
     </div>
-    <div class="timer-ctrl">
-      <span class="timer-num" id="ctrl-timer">00:00</span>
-      <button class="btn-timer" id="timer-btn" onclick="toggleTimer()">▶ inicio</button>
-      <button class="btn-reset-sm" onclick="resetTimer()">↺</button>
-    </div>
   </div>
-  <div class="divider"></div>
-  <button class="btn-names" onclick="editNames()">✎ editar nombres de equipos</button>
 </div>
 
-<button class="btn-reset-all" onclick="resetAll()">⟳ reiniciar todo</button>
+<!-- TAB CONFIG -->
+<div class="tab-panel" id="tab-config">
 
-<script type="module">
-  import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, update, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <!-- VISIBILIDAD -->
+  <div class="section">
+    <div class="section-title">visibilidad del overlay</div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
-    authDomain: "scoreboard-overlay-a462f.firebaseapp.com",
-    databaseURL: "https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
-    projectId: "scoreboard-overlay-a462f",
-    storageBucket: "scoreboard-overlay-a462f.firebasestorage.app",
-    messagingSenderId: "117646185962",
-    appId: "1:117646185962:web:7763fcb47c7f901cc60e93"
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <span class="toggle-label">mostrar cronómetro</span>
+        <span class="toggle-desc">oculta el reloj del overlay</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="tog-timer" checked onchange="toggleTimer2('showTimer',this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <span class="toggle-label">modo de faltas</span>
+        <span class="toggle-desc">puntos o número con color</span>
+      </div>
+      <div style="display:flex;gap:0;">
+        <button class="btn-mode active" id="mode-dots"   onclick="setFoulMode('dots')">puntos</button>
+        <button class="btn-mode"        id="mode-number" onclick="setFoulMode('number')" style="margin-left:6px;">número</button>
+      </div>
+    </div>
+
+    <div id="foul-legend-section" style="display:none;margin-top:4px;">
+      <div class="cfg-label" style="margin-bottom:6px;">escala de colores de faltas</div>
+      <div class="foul-legend">
+        <div class="legend-pill lp-yellow">10</div>
+        <div class="legend-pill lp-orange">15</div>
+        <div class="legend-pill lp-red">20</div>
+        <div class="legend-pill lp-dred">25</div>
+        <div class="legend-pill lp-dred2">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOMBRES -->
+  <div class="section">
+    <div class="section-title">nombres de equipos</div>
+    <div class="two-cols">
+      <div class="team-col">
+        <div class="col-label home">local</div>
+        <input class="cfg-input" id="inp-hname" type="text" placeholder="LOCAL" maxlength="12">
+      </div>
+      <div class="team-col">
+        <div class="col-label away">visita</div>
+        <input class="cfg-input" id="inp-aname" type="text" placeholder="VISITA" maxlength="12">
+      </div>
+    </div>
+    <button class="btn-cfg-apply" style="margin-top:10px;" onclick="applyNames()">aplicar nombres</button>
+  </div>
+
+  <!-- COLORES -->
+  <div class="section">
+    <div class="section-title">colores</div>
+    <div class="two-cols">
+      <div class="team-col">
+        <div class="col-label home">local</div>
+        <div class="cfg-group">
+          <span class="cfg-label">fondo del bloque</span>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="h-bg"   value="#0f193c" oninput="previewColor('home')">
+            <div class="color-preview" id="h-bg-prev">fondo</div>
+          </div>
+        </div>
+        <div class="cfg-group">
+          <span class="cfg-label">color del nombre</span>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="h-name" value="#a3b8cc" oninput="previewColor('home')">
+            <div class="color-preview" id="h-name-prev">nombre</div>
+          </div>
+        </div>
+      </div>
+      <div class="team-col">
+        <div class="col-label away">visita</div>
+        <div class="cfg-group">
+          <span class="cfg-label">fondo del bloque</span>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="a-bg"   value="#280a0a" oninput="previewColor('away')">
+            <div class="color-preview" id="a-bg-prev">fondo</div>
+          </div>
+        </div>
+        <div class="cfg-group">
+          <span class="cfg-label">color del nombre</span>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="a-name" value="#a3b8cc" oninput="previewColor('away')">
+            <div class="color-preview" id="a-name-prev">nombre</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cfg-group" style="margin-top:10px;">
+      <span class="cfg-label">borde del scoreboard</span>
+      <div class="color-row">
+        <input type="color" class="color-picker" id="border-color" value="#ffffff" oninput="previewBorder()">
+        <div class="color-preview" id="border-prev">borde exterior</div>
+      </div>
+    </div>
+    <button class="btn-cfg-apply" onclick="applyColors()">aplicar colores</button>
+  </div>
+
+  <!-- LOGOS -->
+  <div class="section">
+    <div class="section-title">logos</div>
+    <div class="two-cols">
+      <div class="team-col">
+        <div class="col-label home">local</div>
+        <div class="logo-row">
+          <img class="logo-preview" id="prev-hlogo" src="" alt="">
+          <button class="btn-logo-upload" onclick="document.getElementById('file-hlogo').click()">📁 subir</button>
+          <input type="file" id="file-hlogo" accept="image/*" onchange="uploadLogo('home',this)">
+        </div>
+        <input class="cfg-input" id="inp-hlogo" type="url" placeholder="https://... URL imagen">
+        <button class="btn-cfg-apply" style="margin-top:6px;" onclick="applyLogoUrl('home')">aplicar URL local</button>
+      </div>
+      <div class="team-col">
+        <div class="col-label away">visita</div>
+        <div class="logo-row">
+          <img class="logo-preview" id="prev-alogo" src="" alt="">
+          <button class="btn-logo-upload" onclick="document.getElementById('file-alogo').click()">📁 subir</button>
+          <input type="file" id="file-alogo" accept="image/*" onchange="uploadLogo('away',this)">
+        </div>
+        <input class="cfg-input" id="inp-alogo" type="url" placeholder="https://... URL imagen">
+        <button class="btn-cfg-apply" style="margin-top:6px;" onclick="applyLogoUrl('away')">aplicar URL visita</button>
+      </div>
+    </div>
+    <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:8px;line-height:1.6;">
+      Subir imagen: se convierte a base64 y se guarda en Firebase.<br>
+      URL: solo funciona si la imagen es pública en internet.
+    </p>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
+  authDomain:"scoreboard-overlay-a462f.firebaseapp.com",
+  databaseURL:"https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
+  projectId:"scoreboard-overlay-a462f",
+  storageBucket:"scoreboard-overlay-a462f.firebasestorage.app",
+  messagingSenderId:"117646185962",
+  appId:"1:117646185962:web:7763fcb47c7f901cc60e93"
+});
+
+var db=firebase.database(), matchRef=db.ref('match');
+var conn=document.getElementById('conn');
+var MAX_CARDS=4, MAX_FOULS=30;
+var PERIOD_SFX={1:'°',2:'°',3:'°',4:'°',5:' ET',6:' P'};
+var DUR_IDS=['dur-10','dur-15','dur-20','dur-25','dur-30'];
+
+var state={
+  homeScore:0,awayScore:0,homeFouls:0,awayFouls:0,
+  homeCards:[],awayCards:[],period:1,seconds:25*60,
+  homeName:'LOCAL',awayName:'VISITA',
+  homeLogo:'',awayLogo:'',
+  homeColors:{},awayColors:{},
+  showTimer:true, foulMode:'dots'
+};
+
+var timerInterval=null, running=false, duration=25*60;
+activeDur('dur-25');
+
+matchRef.on('value',function(snap){
+  conn.textContent='● online'; conn.className='conn online';
+  var d=snap.val(); if(!d) return;
+  state.homeScore=d.homeScore||0; state.awayScore=d.awayScore||0;
+  state.homeFouls=d.homeFouls||0; state.awayFouls=d.awayFouls||0;
+  state.homeCards=Array.isArray(d.homeCards)?d.homeCards:(d.homeCards?Object.values(d.homeCards):[]);
+  state.awayCards=Array.isArray(d.awayCards)?d.awayCards:(d.awayCards?Object.values(d.awayCards):[]);
+  state.period=d.period||1; state.seconds=d.seconds!=null?d.seconds:duration;
+  state.homeName=d.homeName||'LOCAL'; state.awayName=d.awayName||'VISITA';
+  state.homeLogo=d.homeLogo||''; state.awayLogo=d.awayLogo||'';
+  state.homeColors=d.homeColors||{}; state.awayColors=d.awayColors||{};
+  state.showTimer=d.showTimer!==false;
+  state.foulMode=d.foulMode||'dots';
+
+  // sync toggles UI
+  document.getElementById('tog-timer').checked=state.showTimer;
+  setFoulModeUI(state.foulMode);
+  renderPreview();
+},function(){ conn.textContent='● offline'; conn.className='conn'; });
+
+function push(partial){ matchRef.update(partial); }
+
+// TABS
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
+  var names=['partido','reloj','config'];
+  document.querySelectorAll('.tab')[names.indexOf(name)].classList.add('active');
+}
+
+// PARTIDO
+window.ch=function(key,delta){
+  var max=(key==='homeFouls'||key==='awayFouls')?MAX_FOULS:99;
+  state[key]=Math.min(max,Math.max(0,(state[key]||0)+delta));
+  push({[key]:state[key]});
+};
+window.addCard=function(team,color){
+  var arr=team==='home'?[...state.homeCards]:[...state.awayCards];
+  if(arr.length<MAX_CARDS) arr.push(color);
+  if(team==='home'){state.homeCards=arr;push({homeCards:arr});}
+  else{state.awayCards=arr;push({awayCards:arr});}
+};
+window.removeCard=function(team){
+  var arr=team==='home'?[...state.homeCards]:[...state.awayCards];
+  if(arr.length>0) arr.pop();
+  if(team==='home'){state.homeCards=arr;push({homeCards:arr});}
+  else{state.awayCards=arr;push({awayCards:arr});}
+};
+window.chPeriod=function(delta){
+  state.period=Math.min(6,Math.max(1,(state.period||1)+delta));
+  push({period:state.period});
+};
+window.resetAll=function(){
+  if(!confirm('¿Reiniciar todo el marcador?')) return;
+  clearInterval(timerInterval); running=false; renderTimerBtn();
+  matchRef.update({homeScore:0,awayScore:0,homeFouls:0,awayFouls:0,homeCards:[],awayCards:[],period:1,seconds:duration});
+};
+
+// RELOJ
+function activeDur(id){
+  DUR_IDS.forEach(function(d){document.getElementById(d).classList.remove('active');});
+  var el=document.getElementById(id); if(el) el.classList.add('active');
+}
+window.setDuration=function(secs){
+  if(running) return;
+  duration=secs; state.seconds=secs;
+  push({seconds:secs});
+  activeDur('dur-'+Math.round(secs/60));
+};
+window.adjustTime=function(delta){
+  state.seconds=Math.max(0,state.seconds+delta);
+  push({seconds:state.seconds});
+};
+window.toggleTimer=function(){
+  if(running){
+    clearInterval(timerInterval); running=false;
+  } else {
+    if(state.seconds<=0){state.seconds=duration;push({seconds:duration});}
+    running=true;
+    timerInterval=setInterval(function(){
+      if(state.seconds>0){state.seconds--;push({seconds:state.seconds});}
+      else{clearInterval(timerInterval);running=false;renderTimerBtn();}
+    },1000);
+  }
+  renderTimerBtn();
+};
+function renderTimerBtn(){
+  var btn=document.getElementById('timer-btn');
+  if(running){btn.textContent='⏸ pausar';btn.classList.add('running');}
+  else{btn.textContent='▶ iniciar';btn.classList.remove('running');}
+}
+
+// CONFIG — VISIBILIDAD
+window.toggleTimer2=function(key,val){ push({[key]:val}); };
+
+window.setFoulMode=function(mode){
+  setFoulModeUI(mode);
+  push({foulMode:mode});
+};
+function setFoulModeUI(mode){
+  document.getElementById('mode-dots').classList.toggle('active',mode==='dots');
+  document.getElementById('mode-number').classList.toggle('active',mode==='number');
+  document.getElementById('foul-legend-section').style.display=mode==='number'?'block':'none';
+}
+
+// CONFIG — NOMBRES
+window.applyNames=function(){
+  var h=document.getElementById('inp-hname').value.trim().toUpperCase();
+  var a=document.getElementById('inp-aname').value.trim().toUpperCase();
+  if(h){push({homeName:h});}
+  if(a){push({awayName:a});}
+};
+
+// CONFIG — COLORES
+window.previewColor=function(team){
+  if(team==='home'){
+    document.getElementById('h-bg-prev').style.background=document.getElementById('h-bg').value;
+    document.getElementById('h-name-prev').style.color=document.getElementById('h-name').value;
+  } else {
+    document.getElementById('a-bg-prev').style.background=document.getElementById('a-bg').value;
+    document.getElementById('a-name-prev').style.color=document.getElementById('a-name').value;
+  }
+};
+window.previewBorder=function(){
+  document.getElementById('border-prev').style.borderColor=document.getElementById('border-color').value;
+};
+window.applyColors=function(){
+  var border=document.getElementById('border-color').value;
+  push({
+    homeColors:{bgColor:document.getElementById('h-bg').value,nameColor:document.getElementById('h-name').value,borderColor:border},
+    awayColors:{bgColor:document.getElementById('a-bg').value,nameColor:document.getElementById('a-name').value,borderColor:border}
+  });
+};
+
+// CONFIG — LOGOS
+window.uploadLogo=function(team,input){
+  var file=input.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var url=e.target.result;
+    var id=team==='home'?'prev-hlogo':'prev-alogo';
+    document.getElementById(id).src=url;
+    document.getElementById(id).className='logo-preview visible';
+    push(team==='home'?{homeLogo:url}:{awayLogo:url});
   };
+  reader.readAsDataURL(file);
+};
+window.applyLogoUrl=function(team){
+  var url=document.getElementById('inp-'+(team==='home'?'h':'a')+'logo').value.trim();
+  if(!url) return;
+  var id=team==='home'?'prev-hlogo':'prev-alogo';
+  document.getElementById(id).src=url;
+  document.getElementById(id).className='logo-preview visible';
+  push(team==='home'?{homeLogo:url}:{awayLogo:url});
+};
 
-  const app    = initializeApp(firebaseConfig);
-  const db     = getDatabase(app);
-  const matchRef = ref(db, 'match');
-  const badge  = document.getElementById('conn-badge');
+// PREVIEW
+function fmtTime(s){
+  s=Math.max(0,s);
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+function renderPreview(){
+  document.getElementById('p-hname').textContent  =state.homeName;
+  document.getElementById('p-aname').textContent  =state.awayName;
+  document.getElementById('p-hscore').textContent =state.homeScore;
+  document.getElementById('p-ascore').textContent =state.awayScore;
+  document.getElementById('p-hfouls').textContent ='faltas: '+state.homeFouls;
+  document.getElementById('p-afouls').textContent ='faltas: '+state.awayFouls;
+  document.getElementById('p-period').textContent =state.period+(PERIOD_SFX[state.period]||'°');
+  document.getElementById('ctrl-period').textContent=state.period;
+  var t=fmtTime(state.seconds);
+  document.getElementById('p-timer').textContent=t;
+  document.getElementById('timer-big').textContent=t;
+  document.getElementById('hf').textContent=state.homeFouls;
+  document.getElementById('af').textContent=state.awayFouls;
 
-  const MAX_FOULS = 7;
-  const MAX_CARDS = 4;
-  const PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
+  var tb=document.getElementById('timer-big');
+  tb.classList.remove('warning','urgent');
+  if(state.seconds<=30) tb.classList.add('urgent');
+  else if(state.seconds<=60) tb.classList.add('warning');
 
-  let state = {
-    homeScore: 0, awayScore: 0,
-    homeFouls: 0, awayFouls: 0,
-    homeCards: [], awayCards: [],
-    period: 1, seconds: 0,
-    homeName: 'LOCAL', awayName: 'VISITA'
-  };
+  if(state.homeColors&&state.homeColors.bgColor)
+    document.getElementById('prev-home-block').style.background=state.homeColors.bgColor;
+  if(state.awayColors&&state.awayColors.bgColor)
+    document.getElementById('prev-away-block').style.background=state.awayColors.bgColor;
 
-  let timerInterval = null;
-  let running = false;
-
-  // Escucha cambios de Firebase para mantener preview sincronizado
-  onValue(matchRef, snap => {
-    badge.textContent = '● online';
-    badge.classList.remove('offline');
-    const d = snap.val();
-    if (d) {
-      state = {
-        homeScore: d.homeScore ?? 0,
-        awayScore: d.awayScore ?? 0,
-        homeFouls: d.homeFouls ?? 0,
-        awayFouls: d.awayFouls ?? 0,
-        homeCards: Array.isArray(d.homeCards) ? d.homeCards : (d.homeCards ? Object.values(d.homeCards) : []),
-        awayCards: Array.isArray(d.awayCards) ? d.awayCards : (d.awayCards ? Object.values(d.awayCards) : []),
-        period:    d.period    ?? 1,
-        seconds:   d.seconds   ?? 0,
-        homeName:  d.homeName  ?? 'LOCAL',
-        awayName:  d.awayName  ?? 'VISITA'
-      };
-      renderPreview();
-    }
-  }, () => {
-    badge.textContent = '● offline';
-    badge.classList.add('offline');
+  ['home','away'].forEach(function(team){
+    var el=document.getElementById('cp-'+team);
+    var cards=team==='home'?state.homeCards:state.awayCards;
+    el.innerHTML='';
+    cards.forEach(function(color){
+      var c=document.createElement('div'); c.className='cprev-card '+color; el.appendChild(c);
+    });
   });
 
-  function push(partial) {
-    update(matchRef, partial);
-  }
-
-  // Exponer funciones al scope global (necesario para onclick en HTML)
-  window.ch = function(key, delta) {
-    const max = (key === 'homeFouls' || key === 'awayFouls') ? MAX_FOULS : 99;
-    state[key] = Math.min(max, Math.max(0, (state[key] ?? 0) + delta));
-    push({ [key]: state[key] });
-  };
-
-  window.addCard = function(team, color) {
-    const arr = team === 'home' ? [...state.homeCards] : [...state.awayCards];
-    if (arr.length < MAX_CARDS) arr.push(color);
-    if (team === 'home') { state.homeCards = arr; push({ homeCards: arr }); }
-    else                 { state.awayCards = arr; push({ awayCards: arr }); }
-  };
-
-  window.removeCard = function(team) {
-    const arr = team === 'home' ? [...state.homeCards] : [...state.awayCards];
-    if (arr.length > 0) arr.pop();
-    if (team === 'home') { state.homeCards = arr; push({ homeCards: arr }); }
-    else                 { state.awayCards = arr; push({ awayCards: arr }); }
-  };
-
-  window.chPeriod = function(delta) {
-    state.period = Math.min(6, Math.max(1, (state.period ?? 1) + delta));
-    push({ period: state.period });
-  };
-
-  window.toggleTimer = function() {
-    if (running) {
-      clearInterval(timerInterval);
-      running = false;
-      renderTimerBtn();
-    } else {
-      running = true;
-      timerInterval = setInterval(() => {
-        state.seconds = (state.seconds ?? 0) + 1;
-        push({ seconds: state.seconds });
-      }, 1000);
-      renderTimerBtn();
-    }
-  };
-
-  window.resetTimer = function() {
-    clearInterval(timerInterval);
-    running = false;
-    state.seconds = 0;
-    push({ seconds: 0 });
-    renderTimerBtn();
-  };
-
-  window.resetAll = function() {
-    if (!confirm('¿Reiniciar todo el marcador?')) return;
-    clearInterval(timerInterval);
-    running = false;
-    renderTimerBtn();
-    set(matchRef, {
-      homeScore: 0, awayScore: 0,
-      homeFouls: 0, awayFouls: 0,
-      homeCards: [], awayCards: [],
-      period: 1, seconds: 0,
-      homeName: state.homeName,
-      awayName: state.awayName
-    });
-  };
-
-  window.editNames = function() {
-    const h = prompt('Nombre equipo LOCAL:', state.homeName);
-    if (h !== null && h.trim()) { state.homeName = h.trim().toUpperCase(); push({ homeName: state.homeName }); }
-    const a = prompt('Nombre equipo VISITA:', state.awayName);
-    if (a !== null && a.trim()) { state.awayName = a.trim().toUpperCase(); push({ awayName: state.awayName }); }
-  };
-
-  function renderTimerBtn() {
-    const btn = document.getElementById('timer-btn');
-    if (running) {
-      btn.textContent = '⏸ pausar';
-      btn.classList.add('running');
-    } else {
-      btn.textContent = '▶ inicio';
-      btn.classList.remove('running');
-    }
-  }
-
-  function fmtTime(s) {
-    const m  = Math.floor(s / 60);
-    const ss = s % 60;
-    return String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
-  }
-
-  function renderPreview() {
-    document.getElementById('p-hname').textContent   = state.homeName;
-    document.getElementById('p-aname').textContent   = state.awayName;
-    document.getElementById('p-hscore').textContent  = state.homeScore;
-    document.getElementById('p-ascore').textContent  = state.awayScore;
-    document.getElementById('p-period').textContent  = state.period + (PERIOD_SFX[state.period] || '°');
-    document.getElementById('ctrl-period').textContent = state.period;
-    const t = fmtTime(state.seconds);
-    document.getElementById('p-timer').textContent   = t;
-    document.getElementById('ctrl-timer').textContent = t;
-    document.getElementById('hf').textContent = state.homeFouls;
-    document.getElementById('af').textContent = state.awayFouls;
-
-    ['home','away'].forEach(team => {
-      const el   = document.getElementById('cp-' + team);
-      const cards = team === 'home' ? state.homeCards : state.awayCards;
-      el.innerHTML = '';
-      cards.forEach(color => {
-        const c = document.createElement('div');
-        c.className = 'cprev-card ' + color;
-        el.appendChild(c);
-      });
-    });
-  }
+  activeDur('dur-'+Math.round(duration/60));
+}
 </script>
 </body>
 </html>
