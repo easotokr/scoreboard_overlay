@@ -396,6 +396,15 @@ firebase.initializeApp({
 
 var db = firebase.database();
 var conn = document.getElementById('conn');
+
+// TABS
+window.switchTab = function(name){
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+  var names=['partido','reloj','config'];
+  document.querySelectorAll('.tab')[names.indexOf(name)].classList.add('active');
+};
 var MAX_CARDS=4, MAX_FOULS=30;
 var PERIOD_SFX={1:'°',2:'°',3:'°',4:'°',5:' ET',6:' P'};
 var DUR_IDS=['dur-10','dur-15','dur-20','dur-25','dur-30'];
