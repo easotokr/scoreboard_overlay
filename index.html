@@ -6,21 +6,17 @@
 <title>Hockey Overlay</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: transparent;
     font-family: 'Arial Black', Arial, sans-serif;
     overflow: hidden;
   }
-
   .overlay-wrap {
     display: inline-flex;
     flex-direction: column;
     gap: 8px;
     padding: 10px;
   }
-
-  /* === SCOREBOARD === */
   .scoreboard {
     display: flex;
     align-items: stretch;
@@ -29,7 +25,6 @@
     border: 2px solid rgba(255,255,255,0.12);
     background: rgba(8,12,24,0.92);
   }
-
   .team-block {
     width: 160px;
     display: flex;
@@ -39,7 +34,6 @@
   }
   .team-block.home { background: rgba(15,25,60,0.95); }
   .team-block.away { background: rgba(40,10,10,0.95); }
-
   .team-name {
     font-size: 11px;
     font-weight: 700;
@@ -74,7 +68,6 @@
     background: transparent;
   }
   .foul-dot.active { background: #f59e0b; border-color: #f59e0b; }
-
   .center-block {
     width: 100px;
     background: rgba(5,8,18,0.97);
@@ -123,8 +116,6 @@
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-
-  /* === TARJETAS === */
   .cards-row {
     display: flex;
     justify-content: space-between;
@@ -139,7 +130,6 @@
     min-height: 4px;
   }
   .card-zone.away-cards { justify-content: flex-end; }
-
   .penalty-card {
     width: 30px;
     height: 42px;
@@ -147,25 +137,25 @@
     transform: rotate(45deg);
     flex-shrink: 0;
     border: 1.5px solid rgba(0,0,0,0.3);
-    transition: opacity 0.3s;
   }
   .penalty-card.blue   { background: #2563eb; }
   .penalty-card.yellow { background: #eab308; }
   .penalty-card.red    { background: #dc2626; }
-
-  /* animación entrada tarjeta */
-  @keyframes cardIn {
-    from { opacity: 0; transform: rotate(45deg) scale(0.5); }
-    to   { opacity: 1; transform: rotate(45deg) scale(1); }
+  .status-dot {
+    position: fixed;
+    bottom: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
   }
-  .penalty-card.new { animation: cardIn 0.35s ease-out; }
+  .status-dot.offline { background: #ef4444; }
 </style>
 </head>
 <body>
 
 <div class="overlay-wrap">
-
-  <!-- SCOREBOARD -->
   <div class="scoreboard">
     <div class="team-block home">
       <div class="team-name" id="home-name">LOCAL</div>
@@ -173,7 +163,6 @@
       <div class="team-fouls-label">faltas</div>
       <div class="foul-dots" id="home-dots"></div>
     </div>
-
     <div class="center-block">
       <div class="period-label">periodo</div>
       <div class="period-value" id="period-val">1</div>
@@ -182,7 +171,6 @@
       <div class="timer-value" id="timer-val">00:00</div>
       <div class="timer-label">tiempo</div>
     </div>
-
     <div class="team-block away">
       <div class="team-name" id="away-name">VISITA</div>
       <div class="team-score" id="away-score">0</div>
@@ -190,44 +178,53 @@
       <div class="foul-dots" id="away-dots"></div>
     </div>
   </div>
-
-  <!-- TARJETAS -->
   <div class="cards-row">
     <div class="card-zone home-cards" id="home-cards"></div>
     <div class="card-zone away-cards" id="away-cards"></div>
   </div>
-
 </div>
 
-<script>
-  const MAX_FOULS = 7;
-  const PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
+<div class="status-dot" id="status-dot"></div>
 
-  let state = {
-    homeScore: 0, awayScore: 0,
-    homeFouls: 0, awayFouls: 0,
-    homeCards: [], awayCards: [],
-    period: 1, seconds: 0,
-    homeName: 'LOCAL', awayName: 'VISITA'
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCww4IjaJESkgFWeo97qOjkIWgyXczFstg",
+    authDomain: "scoreboard-overlay-a462f.firebaseapp.com",
+    databaseURL: "https://scoreboard-overlay-a462f-default-rtdb.firebaseio.com",
+    projectId: "scoreboard-overlay-a462f",
+    storageBucket: "scoreboard-overlay-a462f.firebasestorage.app",
+    messagingSenderId: "117646185962",
+    appId: "1:117646185962:web:7763fcb47c7f901cc60e93"
   };
 
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const dot = document.getElementById('status-dot');
+
+  const PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
+  const MAX_FOULS  = 7;
+
   function render(s) {
-    document.getElementById('home-score').textContent = s.homeScore;
-    document.getElementById('away-score').textContent = s.awayScore;
-    document.getElementById('home-name').textContent  = s.homeName;
-    document.getElementById('away-name').textContent  = s.awayName;
-    document.getElementById('period-val').textContent = s.period;
-    document.getElementById('period-sfx').textContent = PERIOD_SFX[s.period] || '°';
+    document.getElementById('home-score').textContent = s.homeScore ?? 0;
+    document.getElementById('away-score').textContent = s.awayScore ?? 0;
+    document.getElementById('home-name').textContent  = s.homeName  ?? 'LOCAL';
+    document.getElementById('away-name').textContent  = s.awayName  ?? 'VISITA';
+    document.getElementById('period-val').textContent = s.period    ?? 1;
+    document.getElementById('period-sfx').textContent = PERIOD_SFX[s.period] ?? '°';
 
-    const m = Math.floor(s.seconds / 60);
-    const sec = s.seconds % 60;
+    const sec = s.seconds ?? 0;
+    const m   = Math.floor(sec / 60);
+    const ss  = sec % 60;
     document.getElementById('timer-val').textContent =
-      String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+      String(m).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
 
-    renderDots('home', s.homeFouls);
-    renderDots('away', s.awayFouls);
-    renderCards('home', s.homeCards);
-    renderCards('away', s.awayCards);
+    renderDots('home', s.homeFouls ?? 0);
+    renderDots('away', s.awayFouls ?? 0);
+    renderCards('home', s.homeCards ?? []);
+    renderCards('away', s.awayCards ?? []);
   }
 
   function renderDots(team, fouls) {
@@ -243,32 +240,18 @@
   function renderCards(team, cards) {
     const el = document.getElementById(team + '-cards');
     el.innerHTML = '';
-    cards.forEach(color => {
+    (Array.isArray(cards) ? cards : Object.values(cards)).forEach(color => {
       const c = document.createElement('div');
       c.className = 'penalty-card ' + color;
       el.appendChild(c);
     });
   }
 
-  // Escucha cambios desde control.html vía localStorage
-  window.addEventListener('storage', e => {
-    if (e.key === 'hockey_state' && e.newValue) {
-      state = JSON.parse(e.newValue);
-      render(state);
-    }
-  });
-
-  // BroadcastChannel para misma pestaña/dispositivo
-  const bc = new BroadcastChannel('hockey_overlay');
-  bc.onmessage = e => {
-    state = e.data;
-    render(state);
-  };
-
-  // Carga estado inicial si existe
-  const saved = localStorage.getItem('hockey_state');
-  if (saved) { state = JSON.parse(saved); }
-  render(state);
+  onValue(ref(db, 'match'), snap => {
+    dot.classList.remove('offline');
+    const data = snap.val();
+    if (data) render(data);
+  }, () => dot.classList.add('offline'));
 </script>
 </body>
 </html>
