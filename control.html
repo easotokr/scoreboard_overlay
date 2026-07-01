@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Hockey Control</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0e1a;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 12px;
+  }
+
+  h1 {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  /* MINI PREVIEW */
+  .preview {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .prev-team {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 6px;
+  }
+  .prev-team.home { background: rgba(15,25,60,0.8); }
+  .prev-team.away { background: rgba(40,10,10,0.8); }
+  .prev-name { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+  .prev-score { font-size: 36px; font-weight: 900; line-height: 1.1; }
+  .prev-center {
+    width: 70px;
+    text-align: center;
+    background: rgba(5,8,18,0.95);
+    padding: 6px 4px;
+    border-radius: 6px;
+    margin: 0 4px;
+  }
+  .prev-period { font-size: 18px; font-weight: 900; }
+  .prev-timer { font-size: 12px; color: #60a5fa; font-family: 'Courier New', monospace; font-weight: 700; }
+  .prev-plabel { font-size: 7px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+
+  /* CARDS PREVIEW */
+  .cards-preview {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 4px;
+    min-height: 40px;
+  }
+  .cprev-zone { display: flex; gap: 5px; align-items: flex-start; }
+  .cprev-card {
+    width: 22px; height: 32px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    border: 1px solid rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .cprev-card.blue   { background: #2563eb; }
+  .cprev-card.yellow { background: #eab308; }
+  .cprev-card.red    { background: #dc2626; }
+
+  /* SECTION */
+  .section {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 10px;
+  }
+
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .team-col { display: flex; flex-direction: column; gap: 8px; }
+  .col-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 2px;
+  }
+  .col-label.home { color: #93c5fd; }
+  .col-label.away { color: #fca5a5; }
+
+  .row-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .btn-row { display: flex; gap: 5px; }
+
+  button {
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: opacity 0.12s, transform 0.08s;
+    active-transform: scale(0.96);
+  }
+  button:active { opacity: 0.75; transform: scale(0.96); }
+
+  .btn-big {
+    flex: 1;
+    height: 44px;
+    font-size: 20px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .btn-big.plus  { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); }
+  .btn-big.minus { background: rgba(239,68,68,0.2);  border-color: rgba(239,68,68,0.4); }
+
+  .btn-card {
+    flex: 1;
+    height: 38px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .btn-card.blue   { background: rgba(37,99,235,0.35);  border: 1px solid #2563eb; color: #93c5fd; }
+  .btn-card.yellow { background: rgba(234,179,8,0.25);  border: 1px solid #eab308; color: #fde68a; }
+  .btn-card.red    { background: rgba(220,38,38,0.3);   border: 1px solid #dc2626; color: #fca5a5; }
+  .btn-card.clear  { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-size: 16px; }
+
+  /* CONTROLES INFERIORES */
+  .bottom-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .period-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .period-lbl { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; }
+  .period-num { font-size: 20px; font-weight: 900; min-width: 22px; text-align: center; }
+  .btn-sm {
+    width: 32px; height: 32px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+  }
+
+  .timer-ctrl {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .timer-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: #60a5fa;
+    font-family: 'Courier New', monospace;
+    min-width: 52px;
+  }
+  .btn-timer {
+    flex: 1;
+    height: 36px;
+    font-size: 12px;
+    border-radius: 6px;
+    color: #6ee7b7;
+    background: rgba(16,185,129,0.2);
+    border: 1px solid rgba(16,185,129,0.4);
+  }
+  .btn-timer.running {
+    color: #fca5a5;
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.4);
+  }
+  .btn-reset-sm {
+    width: 36px; height: 36px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+  }
+
+  .btn-names {
+    width: 100%;
+    height: 36px;
+    font-size: 11px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+  }
+
+  .btn-reset-all {
+    width: 100%;
+    height: 40px;
+    font-size: 12px;
+    background: rgba(239,68,38,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,38,0.3);
+    border-radius: 8px;
+    margin-top: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 10px 0;
+  }
+
+  .foul-count {
+    font-size: 20px;
+    font-weight: 900;
+    text-align: center;
+    color: #f59e0b;
+    min-width: 24px;
+  }
+</style>
+</head>
+<body>
+
+<h1>⬡ hockey overlay — control</h1>
+
+<!-- MINI PREVIEW -->
+<div class="preview">
+  <div class="prev-team home">
+    <div class="prev-name" id="p-hname">LOCAL</div>
+    <div class="prev-score" id="p-hscore">0</div>
+  </div>
+  <div class="prev-center">
+    <div class="prev-plabel">período</div>
+    <div class="prev-period" id="p-period">1°</div>
+    <div class="prev-timer" id="p-timer">00:00</div>
+  </div>
+  <div class="prev-team away">
+    <div class="prev-name" id="p-aname">VISITA</div>
+    <div class="prev-score" id="p-ascore">0</div>
+  </div>
+</div>
+
+<!-- PREVIEW TARJETAS -->
+<div class="cards-preview">
+  <div class="cprev-zone" id="cp-home"></div>
+  <div class="cprev-zone" id="cp-away"></div>
+</div>
+
+<!-- GOL + FALTAS -->
+<div class="section">
+  <div class="section-title">goles y faltas</div>
+  <div class="two-cols">
+
+    <div class="team-col">
+      <div class="col-label home">local</div>
+      <div class="row-label">gol</div>
+      <div class="btn-row">
+        <button class="btn-big plus"  onclick="change('homeScore', 1)">+</button>
+        <button class="btn-big minus" onclick="change('homeScore', -1)">−</button>
+      </div>
+      <div class="row-label">falta <span class="foul-count" id="hf-count">0</span></div>
+      <div class="btn-row">
+        <button class="btn-big plus"  onclick="change('homeFouls', 1)">+</button>
+        <button class="btn-big minus" onclick="change('homeFouls', -1)">−</button>
+      </div>
+    </div>
+
+    <div class="team-col">
+      <div class="col-label away">visita</div>
+      <div class="row-label">gol</div>
+      <div class="btn-row">
+        <button class="btn-big plus"  onclick="change('awayScore', 1)">+</button>
+        <button class="btn-big minus" onclick="change('awayScore', -1)">−</button>
+      </div>
+      <div class="row-label">falta <span class="foul-count" id="af-count">0</span></div>
+      <div class="btn-row">
+        <button class="btn-big plus"  onclick="change('awayFouls', 1)">+</button>
+        <button class="btn-big minus" onclick="change('awayFouls', -1)">−</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TARJETAS -->
+<div class="section">
+  <div class="section-title">tarjetas</div>
+  <div class="two-cols">
+
+    <div class="team-col">
+      <div class="col-label home">local</div>
+      <div class="btn-row">
+        <button class="btn-card blue"   onclick="addCard('home','blue')">azul</button>
+        <button class="btn-card yellow" onclick="addCard('home','yellow')">●</button>
+        <button class="btn-card red"    onclick="addCard('home','red')">roja</button>
+        <button class="btn-card clear"  onclick="removeCard('home')">✕</button>
+      </div>
+    </div>
+
+    <div class="team-col">
+      <div class="col-label away">visita</div>
+      <div class="btn-row">
+        <button class="btn-card blue"   onclick="addCard('away','blue')">azul</button>
+        <button class="btn-card yellow" onclick="addCard('away','yellow')">●</button>
+        <button class="btn-card red"    onclick="addCard('away','red')">roja</button>
+        <button class="btn-card clear"  onclick="removeCard('away')">✕</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PERÍODO + RELOJ -->
+<div class="section">
+  <div class="section-title">período y reloj</div>
+
+  <div class="bottom-row">
+    <div class="period-ctrl">
+      <span class="period-lbl">per.</span>
+      <button class="btn-sm" onclick="changePeriod(-1)">◀</button>
+      <span class="period-num" id="ctrl-period">1</span>
+      <button class="btn-sm" onclick="changePeriod(1)">▶</button>
+    </div>
+
+    <div class="timer-ctrl">
+      <span class="timer-num" id="ctrl-timer">00:00</span>
+      <button class="btn-timer" id="timer-btn" onclick="toggleTimer()">▶ inicio</button>
+      <button class="btn-reset-sm" onclick="resetTimer()">↺</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn-names" onclick="editNames()">✎ editar nombres de equipos</button>
+</div>
+
+<button class="btn-reset-all" onclick="resetAll()">⟳ reiniciar todo</button>
+
+<script>
+  const MAX_FOULS = 7;
+  const MAX_CARDS = 4;
+  const PERIOD_SFX = { 1:'°', 2:'°', 3:'°', 4:'°', 5:' ET', 6:' P' };
+
+  let state = {
+    homeScore: 0, awayScore: 0,
+    homeFouls: 0, awayFouls: 0,
+    homeCards: [], awayCards: [],
+    period: 1, seconds: 0,
+    running: false,
+    homeName: 'LOCAL', awayName: 'VISITA'
+  };
+
+  let timerInterval = null;
+  const bc = new BroadcastChannel('hockey_overlay');
+
+  function publish() {
+    const toSave = { ...state };
+    localStorage.setItem('hockey_state', JSON.stringify(toSave));
+    bc.postMessage(toSave);
+    renderPreview();
+  }
+
+  function change(key, delta) {
+    const mins = (key === 'homeScore' || key === 'awayScore') ? 0 : 0;
+    const maxs = (key === 'homeFouls' || key === 'awayFouls') ? MAX_FOULS : 99;
+    state[key] = Math.min(maxs, Math.max(0, state[key] + delta));
+    publish();
+  }
+
+  function addCard(team, color) {
+    const arr = team === 'home' ? state.homeCards : state.awayCards;
+    if (arr.length < MAX_CARDS) arr.push(color);
+    publish();
+  }
+
+  function removeCard(team) {
+    const arr = team === 'home' ? state.homeCards : state.awayCards;
+    if (arr.length > 0) arr.pop();
+    publish();
+  }
+
+  function changePeriod(delta) {
+    state.period = Math.min(6, Math.max(1, state.period + delta));
+    publish();
+  }
+
+  function toggleTimer() {
+    if (state.running) {
+      clearInterval(timerInterval);
+      state.running = false;
+      renderTimerBtn();
+    } else {
+      state.running = true;
+      timerInterval = setInterval(() => {
+        state.seconds++;
+        publish();
+      }, 1000);
+      renderTimerBtn();
+    }
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    state.running = false;
+    state.seconds = 0;
+    renderTimerBtn();
+    publish();
+  }
+
+  function renderTimerBtn() {
+    const btn = document.getElementById('timer-btn');
+    if (state.running) {
+      btn.textContent = '⏸ pausar';
+      btn.classList.add('running');
+    } else {
+      btn.textContent = '▶ inicio';
+      btn.classList.remove('running');
+    }
+  }
+
+  function resetAll() {
+    if (!confirm('¿Reiniciar todo?')) return;
+    clearInterval(timerInterval);
+    state = {
+      homeScore: 0, awayScore: 0,
+      homeFouls: 0, awayFouls: 0,
+      homeCards: [], awayCards: [],
+      period: 1, seconds: 0, running: false,
+      homeName: state.homeName, awayName: state.awayName
+    };
+    renderTimerBtn();
+    publish();
+  }
+
+  function editNames() {
+    const h = prompt('Nombre equipo LOCAL:', state.homeName);
+    if (h !== null && h.trim()) state.homeName = h.trim().toUpperCase();
+    const a = prompt('Nombre equipo VISITA:', state.awayName);
+    if (a !== null && a.trim()) state.awayName = a.trim().toUpperCase();
+    publish();
+  }
+
+  function fmtTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+
+  function renderPreview() {
+    document.getElementById('p-hname').textContent  = state.homeName;
+    document.getElementById('p-aname').textContent  = state.awayName;
+    document.getElementById('p-hscore').textContent = state.homeScore;
+    document.getElementById('p-ascore').textContent = state.awayScore;
+    document.getElementById('p-period').textContent = state.period + (PERIOD_SFX[state.period] || '°');
+    const t = fmtTime(state.seconds);
+    document.getElementById('p-timer').textContent   = t;
+    document.getElementById('ctrl-timer').textContent = t;
+    document.getElementById('ctrl-period').textContent = state.period;
+    document.getElementById('hf-count').textContent  = state.homeFouls;
+    document.getElementById('af-count').textContent  = state.awayFouls;
+
+    // cards preview
+    ['home','away'].forEach(team => {
+      const el = document.getElementById('cp-' + team);
+      el.innerHTML = '';
+      (team === 'home' ? state.homeCards : state.awayCards).forEach(color => {
+        const c = document.createElement('div');
+        c.className = 'cprev-card ' + color;
+        el.appendChild(c);
+      });
+    });
+  }
+
+  // Carga estado inicial
+  const saved = localStorage.getItem('hockey_state');
+  if (saved) {
+    const s = JSON.parse(saved);
+    state = { ...state, ...s, running: false };
+  }
+  renderPreview();
+  renderTimerBtn();
+</script>
+</body>
+</html>
